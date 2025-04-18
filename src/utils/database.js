@@ -5,14 +5,16 @@ function PostgresDB() {
     const self = {
         pool: null,
     }
-    return {
+
+    const db = {
         execute_sql: async (sql, binds) => {
             if (!self.pool)
                 return Promise.reject("Database not connected");
             const client = await self.pool.connect();
+            let result;
             await client.query('BEGIN')
             try {
-                const result = await client.query(sql, binds);
+                result = await client.query(sql, binds);
                 await client.query('COMMIT')
                 client.release()
             } catch (e) {
@@ -39,7 +41,9 @@ function PostgresDB() {
                 self.pool = null;
             }
         },
-    }
+    };
+
+    return db;
 }
 
 export default PostgresDB();
