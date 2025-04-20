@@ -1,4 +1,10 @@
-export default {
+const dotenv = require('dotenv');
+const path = require('path');
+
+// Use path.resolve to get absolute path to .env file in project root
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
+module.exports = {
     POSTGRES: {
         host: process.env.PG_HOSTNAME || 'localhost',
         port: process.env.PG_PORT || 5432,

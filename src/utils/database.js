@@ -1,15 +1,12 @@
-import pg from 'pg';
-import config from "../config.js";
+const pg = require('pg');
+const config = require('../config.js');
 
 function PostgresDB() {
     const self = {
         pool: null,
     }
-
-    const db = {
+    return {
         execute_sql: async (sql, binds) => {
-            if (!self.pool)
-                return Promise.reject("Database not connected");
             const client = await self.pool.connect();
             let result;
             await client.query('BEGIN')
@@ -42,8 +39,11 @@ function PostgresDB() {
             }
         },
     };
-
-    return db;
 }
-
-export default PostgresDB();
+const db = PostgresDB()
+db.connect().then(() => {
+    console.log("Connected to PostgreSQL database")
+}).catch((err) => {
+    console.error("Error connecting to PostgreSQL database", err)
+})
+module.exports = db

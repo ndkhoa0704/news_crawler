@@ -1,18 +1,15 @@
-import winston from 'winston';
-import { DailyRotateFile } from 'winston-daily-rotate-file';
-import path from 'path';
-import fs from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+const winston = require('winston');
+const { DailyRotateFile } = require('winston-daily-rotate-file');
+const path = require('path');
+const fs = require('fs');
 
 const { format, transports } = winston;
 
-// Get current file directory with ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+// Get current file directory with CommonJS
+const __dirname = path.dirname(__filename);
 
 // Ensure logs directory exists
-const logDir = path.join(dirname(__dirname), 'logs');
+const logDir = path.join(path.dirname(__dirname), 'logs');
 if (!fs.existsSync(logDir)) {
     fs.mkdirSync(logDir);
 }
@@ -53,4 +50,4 @@ logger.stream = {
     write: (message) => logger.info(message.trim())
 };
 
-export default logger;
+module.exports = logger;

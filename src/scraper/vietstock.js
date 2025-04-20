@@ -1,111 +1,76 @@
-import puppeteer from "puppeteer";
-import db from "../utils/database.js"
-import timeUtils from "../utils/time.js"
+const puppeteer = require("puppeteer");
+const timeUtils = require("../utils/time.js");
+const articleService = require("../services/articles.js");
 
-const sleep = (seconds) => {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            resolve()
-        }, seconds * 1000)
-    })
-}
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function vietStock() {
     const self = {}
     return {
         getNews: async () => {
-            const browser = await puppeteer.launch({ headless: false });
+            const browser = await puppeteer.launch({ headless: true });
             const page = await browser.newPage();
             // Navigate the page to a URL.
             await page.goto('https://vietstock.vn/chu-de/1-2/moi-cap-nhat.htm');
             // Wait for the articles to load
-            await page.waitForSelector('[id^="article"]');
-
-            // Extract all elements with specified selectors, click them and get their text
-            const articleContents = await page.evaluate(async () => {
-                // Find all article elements that match the criteria
-                const articleLinks = document.querySelectorAll('[id^="article"] [href^="#art-cont"]');
-                const results = [];
-                // Process each article
-                for (const link of articleLinks) {
-                    try {
-                        // Click on the article to expand/load content
-                        link.click();
-                        // Wait a moment for content to load/expand
-                        await new Promise(r => setTimeout(r, 500));
-                        // Find the parent article element
-                        const articleElement = link.closest('[id^="article"]');
-                        if (articleElement) {
-                            // Get article data
-                            const articleId = articleElement.id;
-                            const title = articleElement.querySelector('.pTitle')?.innerText || '';
-                            const summary = articleElement.querySelector('.pHead')?.innerText || '';
-                            const contentParts = articleElement.querySelectorAll('.pBody')?.innerText || '';
-                            const content = Array.from(contentParts).map(part => part.innerText).join('\n') || '';
-                            const author = articleElement.querySelector('.pAuthor')?.innerText || '';
-                            let publishedAt = articleElement.querySelector('.pPublishTimeSource')?.innerText || '';
-                            const [time, date] = publishedAt.split(' ')
-                            publishedAt = timeUtils.strToDate(time + ':00' + ' ' + date);
-                            results.push({
-                                id: articleId,
-                                title,
-                                summary,
-                                content,
-                                author,
-                                published_at: publishedAt,
-                                url: window.location.href
-                            });
-                        }
-                    } catch (error) {
-                        console.error("Error processing article:", error);
-                    }
-                }
-                return results;
+            await page.waitForSelector('[href^="#art-cont"]');
+            await sleep(1000)
+            // Get all elements with href starting with "#art-cont"
+            const articleLinks = await page.$$('[href^="#art-cont"]');
+            console.log(`Found ${articleLinks.length} article links`);
+            // Click on each article link
+            for (const link of articleLinks) {
+                await link.click().catch(e => console.log(`Failed to click an element: ${e.message}`));
+                // Small delay between clicks to avoid overwhelming the page
+                await sleep(500);
+            }
+            const results = [];
+            // Extract articles data
+            const articlesData = await page.$$eval('[id^="art-cont"]', articles => {
+                return articles.map(article => {
+                    // Get the elements within each article
+                    const title = article.querySelector('.pTitle')?.innerText || '';
+                    const summary = article.querySelector('.pHead')?.innerText || '';
+                    const bodyElements = article.querySelectorAll('.pBody');
+                    const body = Array.from(bodyElements).map(el => el.innerHTML).join('\n');
+                    const author = article.querySelector('.pAuthor')?.innerText || '';
+                    const publishedAt = article.querySelector('.pPublishTimeSource')?.innerText || '';
+                    const url = article.querySelector('.pSource > a')?.getAttribute('href') || '';
+                    return { title, summary, body, author, publishedAt, url };
+                });
             });
 
-            console.log(`Found and processed ${articleContents.length} articles`);
-
-            // Save to database if needed
-            for (const article of articleContents) {
-                const sql = `
-                INSERT INTO articles (article_id, title, summary, author, content, published_at, url)
-                VALUES ($1, $2, $3, $4, $5, $6)
-                ON CONFLICT (article_id) 
-                DO UPDATE SET 
-                    title = $2,
-                    summary = $3,
-                    author = $4,
-                    content = $5,
-                    published_at = $6,
-                    url = $7,
-                    updated_at = CURRENT_TIMESTAMP
-                RETURNING id
-            `;
-
-                const values = [
-                    article.id,
-                    article.title,
-                    article.summary,
-                    article.author,
-                    article.content,
-                    article.published_at,
-                    article.url
-                ];
-
-                try {
-                    return await db.execute_sql(sql, values);
-                } catch (error) {
-                    console.error('Error saving article to database:', error);
-                    throw error;
+            // Process the extracted data
+            for (const article of articlesData) {
+                if (article.publishedAt) {
+                    const dateParts = article.publishedAt.split(' ');
+                    if (dateParts.length >= 2) {
+                        article.publishedAt = timeUtils.strToDate(dateParts[2] + ' ' + dateParts[1] + ':00');
+                    }
                 }
+
+                results.push({
+                    title: article.title,
+                    summary: article.summary,
+                    content: article.body,
+                    author: article.author,
+                    published_at: article.publishedAt || new Date(),
+                    url: article.url
+                });
             }
 
-            await sleep(5); // Reduced sleep time
+            console.log(`Successfully scraped ${results.length} articles`);
+            articleService.saveArticles(results).then(savedCount => {
+                console.log(`Saved ${savedCount} articles to database`)
+            }).catch(error => {
+                console.error("Error saving articles to database:", error);
+            })
+            // Close browser
             await browser.close();
-
-            return articleContents;
+            // Return success message
+            return { success: true, message: `Scraped ${results.length} articles` };
         }
     }
 }
 
-export default vietStock()
+module.exports = vietStock()

@@ -10,12 +10,12 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "dotenv": "^16.5.0",
     "koa": "^2.16.1",
     "koa-body": "^6.0.1",
     "koa-router": "^13.0.1",
     "node-schedule": "^2.1.1",
     "pg": "^8.14.1",
     "puppeteer": "^24.6.1"
-  },
-  "type": "module"
+  }
 }
