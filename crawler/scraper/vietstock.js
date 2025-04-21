@@ -1,6 +1,6 @@
 const puppeteer = require("puppeteer");
-const timeUtils = require("../utils/time.js");
-const articleService = require("../services/articles.js");
+const timeUtils = require("../../utils/time.js");
+const articleService = require("../../services/articles.js");
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 

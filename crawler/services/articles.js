@@ -1,4 +1,4 @@
-const db = require('../utils/database.js');
+const db = require('../../utils/database.js');
 
 function articleService() {
     const self = {
