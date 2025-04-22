@@ -10,13 +10,6 @@ function articleService() {
     };
     return {
         /**
-         * Remove HTML tags from a string
-         */
-        removeHtmlTags: (text) => {
-            return self.removeHtmlTags(text);
-        },
-        
-        /**
          * Save a single article to the database
          */
         saveArticle: async (article) => {
