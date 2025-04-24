@@ -8,6 +8,7 @@ function vietstockScaper() {
     const self = {}
     return {
         getNews: async () => {
+            const newestArticlePublishedAt = await articleService.getNewestArticlePulishedAt();
             const browser = await puppeteer.launch({ headless: true });
             const page = await browser.newPage();
             // Navigate the page to a URL.

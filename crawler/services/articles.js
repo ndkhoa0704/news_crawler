@@ -28,13 +28,11 @@ function articleService() {
                 return false;
             }
         },
-
         /**
          * Save multiple articles to the database
          */
         saveArticles: async (articles) => {
             let successCount = 0;
-
             for (const article of articles) {
                 try {
                     const result = await module.exports.saveArticle(article);
@@ -43,8 +41,21 @@ function articleService() {
                     console.error("Error in saveArticles:", error);
                 }
             }
-
             return successCount;
+        },
+        getNewestArticlePulishedAt: async () => {
+            const sql = `SELECT published_at FROM articles ORDER BY published_at DESC LIMIT 1`;
+            try {
+                const result = await db.execute_sql(sql);
+                if (result && result.length > 0) {
+                    return result[0].published_at;
+                } else {
+                    return null;
+                }
+            } catch (error) {
+                console.error("Error fetching newest article published date:", error);
+                return null;
+            }
         }
     }
 }
