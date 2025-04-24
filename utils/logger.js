@@ -1,18 +1,20 @@
 const winston = require('winston');
-const { DailyRotateFile } = require('winston-daily-rotate-file');
 const path = require('path');
 const fs = require('fs');
 
 const { format, transports } = winston;
-
-// Get current file directory with CommonJS
-const __dirname = path.dirname(__filename);
 
 // Ensure logs directory exists
 const logDir = path.join(path.dirname(__dirname), 'logs');
 if (!fs.existsSync(logDir)) {
     fs.mkdirSync(logDir);
 }
+
+// Get current date for log filename
+const getFormattedDate = () => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+};
 
 // Define the format for logs
 const logFormat = format.combine(
@@ -35,15 +37,42 @@ const logger = winston.createLogger({
             )
         }),
 
-        // File transport - daily rotation, keep 7 days
-        new DailyRotateFile({
-            filename: path.join(logDir, 'application-%DATE%.log'),
-            datePattern: 'YYYY-MM-DD',
-            maxFiles: '7d',
-            format: logFormat
+        // File transport with date-based filename
+        new transports.File({
+            filename: path.join(logDir, `application-${getFormattedDate()}.log`),
+            format: logFormat,
+            maxsize: 5242880, // 5MB
+            maxFiles: 7,
+            tailable: true
         })
     ]
 });
+
+// Add a function to update the file transport with new date if needed
+const updateFileTransport = () => {
+    const currentDate = getFormattedDate();
+    const fileTransport = logger.transports.find(t => t instanceof transports.File);
+    
+    if (fileTransport) {
+        const expectedFilename = path.join(logDir, `application-${currentDate}.log`);
+        if (fileTransport.filename !== expectedFilename) {
+            // Remove old transport
+            logger.remove(fileTransport);
+            
+            // Add new transport with updated filename
+            logger.add(new transports.File({
+                filename: expectedFilename,
+                format: logFormat,
+                maxsize: 5242880, // 5MB
+                maxFiles: 7,
+                tailable: true
+            }));
+        }
+    }
+};
+
+// Set up daily check for date change (midnight rollover)
+setInterval(updateFileTransport, 60 * 60 * 1000); // Check every hour
 
 // Add stream for Morgan if needed for HTTP request logging
 logger.stream = {

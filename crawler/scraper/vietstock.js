@@ -1,10 +1,10 @@
 const puppeteer = require("puppeteer");
 const timeUtils = require("../../utils/time.js");
-const articleService = require("../../services/articles.js");
+const articleService = require("../services/articles.js");
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-function vietStock() {
+function vietstockScaper() {
     const self = {}
     return {
         getNews: async () => {
@@ -73,4 +73,4 @@ function vietStock() {
     }
 }
 
-module.exports = vietStock()
+module.exports = vietstockScaper()
