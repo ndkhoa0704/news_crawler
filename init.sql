@@ -6,6 +6,7 @@ CREATE TABLE public.articles (
 	author varchar(255) NULL,
 	published_at timestamp NULL,
 	url text NOT NULL,
-	classify char(1) NULL,
+	source varchar(15) NOT NULL,
+	sentiment char(1) NULL,
 	CONSTRAINT articles_pkey PRIMARY KEY (id)
 );

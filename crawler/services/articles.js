@@ -43,7 +43,7 @@ function articleService() {
             }
             return successCount;
         },
-        getNewestArticlePulishedAt: async () => {
+        getNewestArticlePulishedAt: async (source) => {
             const sql = `SELECT published_at FROM articles ORDER BY published_at DESC LIMIT 1`;
             try {
                 const result = await db.execute_sql(sql);

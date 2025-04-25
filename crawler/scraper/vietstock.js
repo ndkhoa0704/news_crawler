@@ -1,6 +1,7 @@
 const puppeteer = require("puppeteer");
 const timeUtils = require("../../utils/time.js");
 const articleService = require("../services/articles.js");
+const logger = require("../../utils/logger.js");
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -18,10 +19,10 @@ function vietstockScaper() {
             await sleep(1000)
             // Get all elements with href starting with "#art-cont"
             const articleLinks = await page.$$('[href^="#art-cont"]');
-            console.log(`Found ${articleLinks.length} article links`);
+            logger.info(`Found ${articleLinks.length} article links`);
             // Click on each article link
             for (const link of articleLinks) {
-                await link.click().catch(e => console.log(`Failed to click an element: ${e.message}`));
+                await link.click().catch(e => logger.error(`Failed to click an element: ${e.message}`));
                 // Small delay between clicks to avoid overwhelming the page
                 await sleep(500);
             }
@@ -56,13 +57,14 @@ function vietstockScaper() {
                     content: article.body,
                     author: article.author,
                     published_at: article.publishedAt || new Date(),
-                    url: article.url
+                    url: article.url,
+                    source: 'vietstock'
                 });
             }
 
-            console.log(`Successfully scraped ${results.length} articles`);
+            logger.info(`Successfully scraped ${results.length} articles`);
             articleService.saveArticles(results).then(savedCount => {
-                console.log(`Saved ${savedCount} articles to database`)
+                logger.info(`Saved ${savedCount} articles to database`)
             }).catch(error => {
                 console.error("Error saving articles to database:", error);
             })
