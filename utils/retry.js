@@ -1,4 +1,4 @@
-// filepath: e:\news_crawler\utils\retry.js
+// filepath: d:\workspace\news_crawler\utils\retry.js
 const logger = require('./logger');
 
 /**

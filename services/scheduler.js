@@ -1,10 +1,10 @@
 const CronJob = require('cron').CronJob;
-const vietstockScaper = require('../scraper/vietstock');
-const retryUtil = require('../../utils/retry');
-const logger = require('../../utils/logger');
+const vietstockScaper = require('../crawler/scraper/vietstock');
+const retryUtil = require('../utils/retry');
+const logger = require('../utils/logger');
 
 
-function schedulerCtrl() {
+function schedulerService() {
     const jobs = {
         vietstock: new CronJob('*/15 * * * *', async () => {
             // Make the getNews function retryable with jitter strategy
@@ -49,4 +49,4 @@ function schedulerCtrl() {
     }
 }
 
-module.exports = schedulerCtrl();
+module.exports = schedulerService();

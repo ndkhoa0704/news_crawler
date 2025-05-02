@@ -1,4 +1,4 @@
-// filepath: e:\news_crawler\test\retry.js
+// filepath: d:\workspace\news_crawler\test\retry.js
 const retryUtil = require('../utils/retry');
 
 // Create some example functions that fail with different patterns

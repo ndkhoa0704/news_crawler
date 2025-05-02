@@ -6,6 +6,9 @@ function PostgresDB() {
         pool: null,
     }
     return {
+        isConnected: () => {
+            return self.pool !== null;
+        },
         execute_sql: async (sql, binds) => {
             const client = await self.pool.connect();
             let result;
@@ -28,8 +31,6 @@ function PostgresDB() {
         connect: async () => {
             if (self.pool) return self.pool;
             const pool = new pg.Pool(config.POSTGRES);
-            const client = await pool.connect();
-            client.release();
             self.pool = pool;
         },
         disconnect: async () => {

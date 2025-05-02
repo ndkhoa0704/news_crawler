@@ -1,4 +1,4 @@
-const timeUtil = require("../src/utils/time.js");
+const timeUtil = require("../utils/time.js");
 
 function test() {
     const d = timeUtil.strToDate('01/01/2023 18:00:00')
