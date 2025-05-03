@@ -10,7 +10,7 @@ function vietstockScaper() {
     return {
         getNews: async () => {
             const newestArticlePublishedAt = await articleService.getNewestArticlePulishedAt('vietstock');
-            const browser = await puppeteer.launch({ headless: true });
+            const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
             const page = await browser.newPage();
             // Navigate the page to a URL.
             await page.goto('https://vietstock.vn/chu-de/1-2/moi-cap-nhat.htm');

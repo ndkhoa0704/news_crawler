@@ -1,0 +1,12 @@
+services:
+  finance_advisor:
+    build:
+      context: .
+      dockerfile: dockerfile
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT}:${WEB_PORT}"
+    env_file:
+      - .env
+    volumes:
+      - ./logs:/app/logs
