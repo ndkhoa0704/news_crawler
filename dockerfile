@@ -1,4 +1,4 @@
-FROM node:lts
+FROM node:lts-bullseye-slim AS base
 
 # Set working directory
 WORKDIR /app
@@ -6,13 +6,14 @@ WORKDIR /app
 # Install Puppeteer dependencies
 RUN apt-get update && apt-get install -y \
     chromium \
-    fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf fonts-liberation \
     ca-certificates \
     --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Set environment variable for Puppeteer to use installed Chromium
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+
+FROM base AS service
 
 # Copy package.json and package-lock.json
 COPY package*.json ./
