@@ -9,7 +9,7 @@ function vietstockScaper() {
     const self = {}
     return {
         getNews: async () => {
-            const newestArticlePublishedAt = await articleService.getNewestArticlePulishedAt();
+            const newestArticlePublishedAt = await articleService.getNewestArticlePulishedAt('vietstock');
             const browser = await puppeteer.launch({ headless: true });
             const page = await browser.newPage();
             // Navigate the page to a URL.
@@ -50,7 +50,14 @@ function vietstockScaper() {
                         article.publishedAt = timeUtils.strToDate(dateParts[2] + ' ' + dateParts[1] + ':00');
                     }
                 }
-
+                if (newestArticlePublishedAt && article.publishedAt && article.publishedAt <= newestArticlePublishedAt) {
+                    logger.info(`Article published at ${article.publishedAt} is older than the newest article published at ${newestArticlePublishedAt}. Skipping...`);
+                    continue;
+                }
+                if (!article.title || !article.body) {
+                    logger.warn(`Article is missing title or body. Skipping...`);
+                    continue;
+                }
                 results.push({
                     title: article.title,
                     summary: article.summary,
@@ -66,7 +73,7 @@ function vietstockScaper() {
             articleService.saveArticles(results).then(savedCount => {
                 logger.info(`Saved ${savedCount} articles to database`)
             }).catch(error => {
-                console.error("Error saving articles to database:", error);
+                logger.error("Error saving articles to database:", error);
             })
             // Close browser
             await browser.close();

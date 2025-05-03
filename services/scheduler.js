@@ -5,10 +5,9 @@ const logger = require('../utils/logger');
 
 
 function schedulerService() {
-    const jobs = {
-        vietstock: new CronJob('*/15 * * * *', async () => {
-            // Make the getNews function retryable with jitter strategy
-            const retryableGetNews = retryUtil.retryable(vietstockScaper.getNews, {
+    const self = {
+        newsRetryWarpper: (func) => {
+            const retryableGetNews = retryUtil.retryable(func, {
                 strategy: retryUtil.STRATEGIES.JITTER,
                 maxRetries: 3,
                 baseDelay: 2000,
@@ -16,14 +15,18 @@ function schedulerService() {
                 factor: 2,
                 jitter: 0.2,
                 onRetry: (error, attempt, delay) => {
-                    logger.warn(`Retrying vietstock scraper (attempt ${attempt}) after ${Math.round(delay)}ms due to: ${error.message}`);
+                    logger.warn(`Retrying (attempt ${attempt}) after ${Math.round(delay)}ms due to: ${error.message}`);
                 }
             });
+            return retryableGetNews
+        }
+    }
+    const jobs = {
+        vietstock: new CronJob('*/30 * * * *', async () => {
             try {
-                await retryableGetNews();
-                logger.info('Successfully completed vietstock scraping job');
+                await self.newsRetryWarpper(vietstockScaper.getNews)()
             } catch (error) {
-                logger.error(`Failed to complete vietstock scraping after retries: ${error.message}`);
+                logger.error(`Error in Vietstock scraper job: ${error.message}`);
             }
         })
     }

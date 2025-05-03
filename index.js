@@ -4,7 +4,7 @@ const serve = require('koa-static');
 const mount = require('koa-mount');
 const path = require('path');
 const logger = require('./utils/logger');
-
+const llm = require('./services/llm');
 const apiRouter = require('./api');
 const schedulerService = require('./services/scheduler');
 const PostgresDB = require('./utils/database');
@@ -41,10 +41,13 @@ app.use(serve(path.join(__dirname, 'public')));
 app.use(apiRouter.routes());
 app.use(apiRouter.allowedMethods());
 
+// Start llm service
+llm.init()
 // Connect to database and start server
 PostgresDB.connect()
     .then(() => {
         logger.info("Connected to PostgreSQL database");
+
         app.listen(3000, () => {
             logger.info('Server is running on port 3000');
             // Start the scheduler jobs
