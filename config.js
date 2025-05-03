@@ -6,5 +6,6 @@ module.exports = {
         user: process.env.PG_USERNAME || 'postgres',
         password: process.env.PG_PASSWORD || 'postgres',
     },
-    OPENAI_API_KEY: process.env.OPENAI_API_KEY
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    WEB_PORT: process.env.WEB_PORT || 3000,
 }

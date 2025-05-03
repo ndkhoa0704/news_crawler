@@ -8,6 +8,7 @@ const llm = require('./services/llm');
 const apiRouter = require('./api');
 const schedulerService = require('./services/scheduler');
 const PostgresDB = require('./utils/database');
+const config = require('./config');
 
 const app = new Koa();
 
@@ -48,8 +49,8 @@ PostgresDB.connect()
     .then(() => {
         logger.info("Connected to PostgreSQL database");
 
-        app.listen(3000, () => {
-            logger.info('Server is running on port 3000');
+        app.listen(config.WEB_PORT, () => {
+            logger.info(`Server is running on port ${config.WEB_PORT}`);
             // Start the scheduler jobs
             schedulerService.startJobs();
             logger.info('Scheduler jobs have been started');
