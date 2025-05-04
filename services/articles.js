@@ -9,11 +9,23 @@ function articleService() {
             return text.replace(/<[^>]*>/g, '');
         },
 
+        summarizeContent: async (title, content) => {
+            try {
+                const prompt = `Summarize the content of this news article. Return only the summary.
+                
+                Title: ${title}
+                Content: ${content}`;
+
+                const response = await llm.getResponse(prompt);
+                return response.trim();
+            } catch (error) {
+                console.error("Error summarizing content:", error);
+                return 'Error summarizing content';
+            }
+        },
         analyzeSentiment: async (title, content) => {
             try {
                 const prompt = `Analyze the sentiment of this news article. Return only 'P' for positive sentiment or 'N' for negative sentiment.
-                
-                Title: ${title}
                 Content: ${content}`;
 
                 const response = await llm.getResponse(prompt);
