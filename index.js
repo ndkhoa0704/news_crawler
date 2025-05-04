@@ -71,8 +71,8 @@ PostgresDB.connect()
     .then(() => {
         logger.info("Connected to PostgreSQL database");
 
-        const server = app.listen(config.WEB_PORT, () => {
-            logger.info(`Server is running on port ${config.WEB_PORT}`);
+        const server = app.listen(config.WEB_PORT, '0.0.0.0', () => {
+            logger.info(`Server is running on port ${config.WEB_PORT} and accessible at http://0.0.0.0:${config.WEB_PORT}`);
             // Start the scheduler jobs
             schedulerService.startJobs();
             logger.info('Scheduler jobs have been started');
