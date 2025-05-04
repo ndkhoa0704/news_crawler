@@ -1,5 +1,5 @@
 services:
-  finance_advisor:
+  web:
     build:
       context: .
       dockerfile: dockerfile
