@@ -10,3 +10,9 @@ services:
       - .env
     volumes:
       - ./logs:/app/logs
+
+  restarter:
+    image: docker:cli
+    volumes: ["/var/run/docker.sock:/var/run/docker.sock"]
+    command: ["/bin/sh", "-c", "while true; do sleep 86400; docker restart news_crawler-web-1; done"]
+    restart: ${RESTART}
